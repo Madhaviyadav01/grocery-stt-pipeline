@@ -16,8 +16,13 @@ Thumbs.db
 # Temporary files
 temp_*
 
-# Artifacts (optional if large)
+# Artifacts
+
+data/Audio_samples/
 artifacts/
+
+
+
 
 .pytest_cache/
 .vscode/
