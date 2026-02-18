@@ -1,6 +1,5 @@
 """
-Run Phase D - Fuzzy Canonical Matching (V3 Optimized)
-Integrates Hybrid Scoring and Brand Penalty for 50%+ Accuracy.
+Run Phase D - Fuzzy Canonical Matching
 """
 
 import os

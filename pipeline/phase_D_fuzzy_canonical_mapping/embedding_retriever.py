@@ -1,5 +1,5 @@
 """
-Embedding Retriever - Phase D (V3 Optimized)
+Embedding Retriever - Phase D 
 Semantic retrieval with Phonetic-Awareness for B2B Grocery.
 """
 

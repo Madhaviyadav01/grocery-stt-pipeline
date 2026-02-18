@@ -1,6 +1,5 @@
 """
-Improved Fuzzy Matcher - Phase D (Production V3)
-Optimized for 50%+ Accuracy in B2B Grocery Voice AI.
+Fuzzy Matcher 
 """
 
 from rapidfuzz import fuzz

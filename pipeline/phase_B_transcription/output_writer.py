@@ -14,18 +14,6 @@ def save_transcript(
     """
     Save a transcript to a text file.
     
-    Args:
-        transcript_text (str): The transcribed text to save.
-        audio_path (str): Path to the original audio file (used for naming).
-        output_folder (str): Folder to save the transcript.
-                            Default: "artifacts/transcriptions".
-    
-    Returns:
-        str: Path to the saved transcript file.
-    
-    Example:
-        >>> save_transcript("Hello world", "cleaned_rec_1.wav")
-        'artifacts/transcriptions/cleaned_rec_1.txt'
     """
     # Create output folder if it doesn't exist
     os.makedirs(output_folder, exist_ok=True)

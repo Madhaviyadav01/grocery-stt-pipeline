@@ -1,6 +1,5 @@
 """
-Load Inputs - Phase E (Production Stable Version)
-Robust merging + validation for evaluation.
+Load Inputs - Phase E 
 """
 
 import pandas as pd
@@ -70,7 +69,7 @@ def load_inputs(
         gt_df = pd.read_excel(ground_truth_path)
 
     # Standardize column names
-    gt_df.columns = gt_df.columns.str.lower().str.strip()
+    gt_df.columns = gt_df.columns.str.lower().str.strip().str.replace(" ", "_")
 
     # Ensure record_id exists
     if "record_id" not in gt_df.columns:
@@ -107,6 +106,22 @@ def load_inputs(
     print(f"Total Items in Ground Truth:  {len(gt_df)}")
     print(f"Total Items Predicted:        {len(preds_df)}")
     print(f"Directly Evaluable Items:     {len(merged_df)}")
+    
+    # Rename Columns for Metrics
+    # 1. Restore Pred columns that got suffixed
+    if "item_quantity_pred" in merged_df.columns:
+        merged_df["item_quantity"] = merged_df["item_quantity_pred"]
+        
+    # 2. Restore GT columns for Family Match (brand_gt -> brand)
+    rename_map = {
+        "brand_gt": "brand",
+        "item_name_gt": "item_name"
+    }
+    
+    for old_col, new_col in rename_map.items():
+        if old_col in merged_df.columns:
+            # print(f"  -> Renaming {old_col} to {new_col}")
+            merged_df[new_col] = merged_df[old_col]
 
     if len(merged_df) < len(gt_df):
         print(

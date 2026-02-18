@@ -1,6 +1,5 @@
 """
-TF-IDF Retriever - Phase D (V3 Optimized)
-Enhanced with character n-grams and brand-priority boosting.
+TF-IDF Retriever - Phase D 
 """
 
 from sklearn.feature_extraction.text import TfidfVectorizer

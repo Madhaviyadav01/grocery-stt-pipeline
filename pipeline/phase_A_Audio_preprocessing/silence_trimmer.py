@@ -11,11 +11,6 @@ def trim_silence(audio: AudioSegment) -> AudioSegment:
     """
     Trim silence from audio by splitting on silence and rejoining chunks.
     
-    Args:
-        audio (AudioSegment): Input audio.
-        
-    Returns:
-        AudioSegment: Audio with silence trimmed.
     """
     # Split on silence
     chunks = split_on_silence(

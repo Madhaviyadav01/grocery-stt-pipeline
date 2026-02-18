@@ -17,8 +17,6 @@ def run_phase_C(
     """
     Run Phase C: Extract structured items from a transcript file.
 
-    Returns:
-        str: output file path
     """
     print(f"[Phase C] Loading transcript: {transcript_path}")
     transcript_text = load_snapshot(transcript_path)

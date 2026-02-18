@@ -15,19 +15,6 @@ def run_phase_B(
     """
     Run Phase B: Transcribe audio to text and save the transcript.
     
-    Args:
-        audio_path (str): Path to the cleaned audio file (WAV recommended).
-        model_name (str): Whisper model size (tiny, base, small, medium, large).
-                         Default: "base".
-        language (str): Language code. Default: "en" for English.
-    
-    Returns:
-        tuple: output_path (str) - Path to the saved transcript file
-    
-    Example:
-        >>> from pipeline.phase_B_transcription.run_phase_B import run_phase_B
-        >>> text, path = run_phase_B("artifacts/audio_processed/cleaned_rec_1.wav")
-        >>> print(text)
     """
     print(f"\n{'='*60}")
     print("Starting Phase B: Speech-to-Text Transcription")

@@ -19,9 +19,6 @@ class TranscriptionEngine:
     """
     Whisper-based Speech-to-Text transcription engine.
     
-    Args:
-        model_name (str): Whisper model size (tiny, base, small, medium, large).
-                         Default: "base" (good balance of speed and accuracy).
     """
     
     def __init__(self, model_name: str = "base"):
@@ -43,15 +40,6 @@ class TranscriptionEngine:
         """
         Transcribe an audio file to text.
         
-        Args:
-            audio_path (str): Path to the audio file.
-            language (str): Language code (default: "en" for English).
-        
-        Returns:
-            str: The transcribed text (stripped of leading/trailing whitespace).
-        
-        Raises:
-            FileNotFoundError: If the audio file does not exist.
         """
         if not os.path.exists(audio_path):
             raise FileNotFoundError(f"Audio file not found: {audio_path}")

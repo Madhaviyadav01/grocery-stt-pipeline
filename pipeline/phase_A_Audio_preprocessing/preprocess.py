@@ -20,12 +20,6 @@ def preprocess_audio(input_path: str, output_folder: str = "artifacts/audio_proc
     """
     Preprocess an audio file: Load → Normalize → Trim Silence → Save.
     
-    Args:
-        input_path (str): Path to the input audio file.
-        output_folder (str): Folder to save the processed audio. Default: "artifacts/audio_processed".
-        
-    Returns:
-        str: Path to the output file.
     """
     print(f"\n{'='*60}")
     print(f"🎵 Starting audio preprocessing: {input_path}")

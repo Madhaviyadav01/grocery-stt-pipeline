@@ -19,12 +19,6 @@ def load_audio(file_path: str) -> AudioSegment:
     Args:
         file_path (str): Path to the audio file (.wav, .mp3, or .m4a).
         
-    Returns:
-        AudioSegment: Loaded audio.
-    
-    Raises:
-        FileNotFoundError: If the file does not exist.
-        Exception: If there is an error loading the audio.
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Audio file not found at: {file_path}")

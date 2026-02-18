@@ -1,6 +1,5 @@
 """
-Text Normalizer - Phase D (Production V3)
-Optimized for 50%+ Accuracy with Hinglish & Brand support.
+Text Normalizer - Phase D 
 """
 
 import re
