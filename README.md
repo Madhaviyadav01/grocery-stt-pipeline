@@ -29,8 +29,7 @@ The system is organized into four primary layers:
 - Intelligence Layer: The core STT engine (Whisper) used for transcribing grocery-specific vocabulary.
 
 - Extraction & Analytics Layer: Post-processing logic that performs entity extraction (product, quantity, unit) and fuzzy matching.
-
-  <img width="1011" height="124" alt="image" src="https://github.com/user-attachments/assets/9ab5d2ae-4703-4a35-b6fa-aa8b9fa29b5d" />
+  
 
 ```bash
 Audio Input
