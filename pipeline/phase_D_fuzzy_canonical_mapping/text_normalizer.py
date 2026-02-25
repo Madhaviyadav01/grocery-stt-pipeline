@@ -92,14 +92,24 @@ def extract_size(text: str) -> Tuple[Optional[float], Optional[str], str]:
 def extract_item_quantity(text: str) -> Tuple[int, str]:
     if not text:
         return 1, text
-    text = text.strip()
-    # Check for quantity at the start (e.g., "5 Amul Butter")
-    match_start = re.match(r'^(\d+)\b', text)
-    if match_start:
-        qty = int(match_start.group(1))
-        remaining = text[match_start.end():].strip()
-        return qty, remaining
-    return 1, text
+
+    text = text.strip().lower()
+
+    # Find standalone numbers
+    matches = re.findall(r'\b(\d+)\b', text)
+
+    if not matches:
+        return 1, text
+
+    # Take the last number as quantity (safer for your pattern)
+    qty = int(matches[-1])
+
+    # Remove only that quantity from text
+    text = re.sub(r'\b{}\b'.format(qty), '', text, count=1)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return qty, text
+
 
 def standardize_size_unit(size, unit):
     if size is None or unit is None:

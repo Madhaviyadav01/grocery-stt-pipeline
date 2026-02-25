@@ -125,7 +125,7 @@ def load_inputs(
 
     if len(merged_df) < len(gt_df):
         print(
-            f"⚠️ WARNING: {len(gt_df) - len(merged_df)} "
+            f"WARNING: {len(gt_df) - len(merged_df)} "
             f"items from Ground Truth were not matched to any prediction."
         )
 

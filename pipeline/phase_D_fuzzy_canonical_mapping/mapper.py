@@ -2,7 +2,13 @@ from typing import Dict, List, Any, Tuple
 from .text_normalizer import process_transcript
 from .fuzzy_matcher import get_confidence_level, HybridScorerV3
 from rapidfuzz import fuzz
-import jellyfish
+
+
+# ==========================================================
+# CONFIG
+# ==========================================================
+
+CONFIDENCE_THRESHOLD = 60  # Tuned to 60 to improve recall
 
 
 # ==========================================================
@@ -28,10 +34,15 @@ def match_product_family(
         family_similarity = fuzz.token_set_ratio(query_text, family_key)
 
         brand = candidate.get("normalized_brand", "")
-        if brand and brand in query_text:
-            family_similarity += 15
 
-        family_scores[family_key] = (candidate, min(family_similarity, 100))
+        # Brand boost / penalty
+        if brand:
+            if brand in query_text:
+                family_similarity += 15
+            else:
+                family_similarity -= 10
+
+        family_scores[family_key] = (candidate, max(0, min(family_similarity, 100)))
 
     sorted_families = sorted(
         family_scores.items(),
@@ -43,7 +54,7 @@ def match_product_family(
 
 
 # ==========================================================
-# VARIANT RESOLUTION
+# VARIANT RESOLUTION (SAFER)
 # ==========================================================
 
 def resolve_variant_within_family(
@@ -53,9 +64,9 @@ def resolve_variant_within_family(
 ) -> Dict[str, Any]:
 
     if not family_variants:
-        return family_variants[0] if family_variants else None
+        return None
 
-    # Exact size match
+    # If user mentioned size → try exact match
     if query_size is not None:
         for variant in family_variants:
             var_size = variant.get("size")
@@ -73,11 +84,7 @@ def resolve_variant_within_family(
                 key=lambda v: abs(v.get("size", 0) - query_size)
             )
 
-    # No size mentioned → choose largest
-    variants_with_size = [v for v in family_variants if v.get("size") is not None]
-    if variants_with_size:
-        return max(variants_with_size, key=lambda v: v.get("size", 0))
-
+    # 🔥 If no size mentioned → DO NOT force largest
     return family_variants[0]
 
 
@@ -92,9 +99,9 @@ def map_transcript(
     all_known_brands: set = None
 ) -> Dict[str, Any]:
 
-
-    # 1. Pre-process the transcript
+    # 1️⃣ Pre-process transcript
     processed = process_transcript(transcript)
+
     query_text = processed["normalized_text"]
     query_size = processed["size_value"]
     query_unit = processed["size_unit"]
@@ -110,28 +117,24 @@ def map_transcript(
             "top_5_candidates": []
         }
 
-    # 2. Stage 1: Broad Retrieval (TF-IDF or Semantic)
-    # Get a wide pool (50-100) to ensure the correct item is at least present
-    # 2. Stage 1: Broad Retrieval (Hybrid)
-
+    # 2️⃣ Hybrid Retrieval
     tfidf_candidates = tfidf_retriever.get_top_candidates(
-    query_text=query_text,
-    top_k=50
-)
+        query_text=query_text,
+        top_k=50
+    )
 
     embedding_candidates = emb_retriever.get_top_candidates(
-    query_text=query_text,
-    top_k=50
-)
+        query_text=query_text,
+        top_k=50
+    )
 
-    # Combine both pools (avoid duplicates by SKU)
+    # Combine both pools (deduplicate by SKU)
     combined = {c["sku_code"]: c for c in tfidf_candidates}
 
     for c in embedding_candidates:
         combined.setdefault(c["sku_code"], c)
 
     candidate_pool = list(combined.values())
-
 
     if not candidate_pool:
         return {
@@ -143,13 +146,11 @@ def map_transcript(
             "top_5_candidates": []
         }
 
-    # 3. Stage 2: Precision Re-Scoring (HybridScorerV3)
-    # We now use the specialized scorer we built earlier
+    # 3️⃣ Precision Re-Scoring
     scorer = HybridScorerV3(all_known_brands=all_known_brands)
     scored_candidates = []
 
     for candidate in candidate_pool:
-        # Use the logic from our improved fuzzy_matcher
         final_score = scorer.compute_final_score(
             query_text=query_text,
             query_size=query_size,
@@ -162,29 +163,55 @@ def map_transcript(
             "score": final_score
         })
 
-    # 4. Final Ranking
+    # 4️⃣ Sort by score
     scored_candidates.sort(key=lambda x: x["score"], reverse=True)
+
+    if not scored_candidates:
+        return {
+            "transcript": transcript,
+            "predicted_canonical_name": None,
+            "confidence_score": 0.0,
+            "confidence_level": "low",
+            "matched_sku": None,
+            "top_5_candidates": []
+        }
 
     best_match = scored_candidates[0]
     best_candidate = best_match["candidate"]
     final_confidence = best_match["score"]
 
-    # Prepare Top 5 for transparency/debugging
+    # Prepare Top 5
     top_5 = []
     for item in scored_candidates[:5]:
         cand = item["candidate"]
         top_5.append({
-            "canonical_name": cand["canonical_name"],
-            "sku": cand["sku_code"],
+            "canonical_name": cand.get("canonical_name"),
+            "sku": cand.get("sku_code"),
             "score": round(item["score"], 2)
         })
 
+    # 🔥 Confidence Threshold Filtering
+    if final_confidence < CONFIDENCE_THRESHOLD:
+        return {
+            "transcript": transcript,
+            "predicted_canonical_name": None,
+            "confidence_score": round(final_confidence, 2),
+            "confidence_level": "low",
+            "matched_sku": None,
+            "normalized_query": query_text,
+            "item_quantity": item_quantity,
+            "extracted_size": query_size,
+            "extracted_unit": query_unit,
+            "top_5_candidates": top_5
+        }
+
+    # ✅ Accept Match
     return {
         "transcript": transcript,
-        "predicted_canonical_name": best_candidate["canonical_name"],
+        "predicted_canonical_name": best_candidate.get("canonical_name"),
         "confidence_score": round(final_confidence, 2),
         "confidence_level": get_confidence_level(final_confidence),
-        "matched_sku": best_candidate["sku_code"],
+        "matched_sku": best_candidate.get("sku_code"),
         "normalized_query": query_text,
         "item_quantity": item_quantity,
         "extracted_size": query_size,
